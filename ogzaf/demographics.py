@@ -10,6 +10,7 @@ import pandas as pd
 import scipy.optimize as opt
 from ogcore import parameter_plots as pp
 import matplotlib.pyplot as plt
+from pandas_datareader import wb
 
 # create output director for figures
 CUR_PATH = os.path.split(os.path.abspath(__file__))[0]
@@ -502,6 +503,11 @@ def get_mort(totpers, start_year=2021, end_year=None, graph=False):
         raise ValueError(err_msg)
 
     # Get UN infant mortality and mortality rate data by age
+
+    # Neonatal mortality rate from World Bank World Development Indicators database
+    infmort_rate = wb.download(indicator="SH.DYN.NMRT", country="ZAF", start=2020, end=2020).squeeze()/1000
+
+
     infmort_rate_df, mort_rates_df = get_un_mort_data(
         start_year=start_year, end_year=end_year, download=False
     )
