@@ -31,28 +31,28 @@ def main():
     Run baseline policy
     ---------------------------------------------------------------------------
     """
-    # Set up baseline parameterization
-    p = Specifications(
-        baseline=True,
-        num_workers=num_workers,
-        baseline_dir=base_dir,
-        output_base=base_dir,
-    )
-    # Update parameters for baseline from default json file
-    p.update_specifications(
-        json.load(
-            open(
-                os.path.join(
-                    CUR_DIR, "..", "ogzaf", "ogzaf_default_parameters.json"
-                )
-            )
-        )
-    )
+    # # Set up baseline parameterization
+    # p = Specifications(
+    #     baseline=True,
+    #     num_workers=num_workers,
+    #     baseline_dir=base_dir,
+    #     output_base=base_dir,
+    # )
+    # # Update parameters for baseline from default json file
+    # p.update_specifications(
+    #     json.load(
+    #         open(
+    #             os.path.join(
+    #                 CUR_DIR, "..", "ogzaf", "ogzaf_default_parameters.json"
+    #             )
+    #         )
+    #     )
+    # )
 
-    # Run model
-    start_time = time.time()
-    runner(p, time_path=True, client=client)
-    print("run time = ", time.time() - start_time)
+    # # Run model
+    # start_time = time.time()
+    # runner(p, time_path=True, client=client)
+    # print("run time = ", time.time() - start_time)
 
     """
     ---------------------------------------------------------------------------
@@ -77,9 +77,19 @@ def main():
             )
         )
     )
+    # Use calibration class to estimate reform tax functions from
+    # Tax-Calculator, specifing reform for Tax-Calculator in iit_reform
+    c2 = Calibration(
+        p2, estimate_tax_functions=False, client=client
+    )
+    # update tax function parameters in Specifications Object
+    d = c2.get_dict()
+    print(d.keys())
     # additional parameters to change
     updated_params = {
         "cit_rate": [[0.35]],
+        "initial_debt_ratio": d["initial_debt_ratio"],
+        "initial_foreign_debt_ratio": d["initial_foreign_debt_ratio"],
     }
     p2.update_specifications(updated_params)
     # Run model
