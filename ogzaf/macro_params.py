@@ -1,5 +1,5 @@
 """
-This module uses data from World Bank WDI, World Bank Quarterly Public Sector Debt (QPSD) database, 
+This module uses data from World Bank WDI, World Bank Quarterly Public Sector Debt (QPSD) database,
 UN Data Portal, and FRED to find values for parameters for the
 OG-ZAF model that rely on macro data for calibration.
 """
@@ -53,7 +53,7 @@ def get_macro_params():
     )
 
     """
-    This retrieves quarterly data from the World Bank Quarterly Public Sector Debt database. 
+    This retrieves quarterly data from the World Bank Quarterly Public Sector Debt database.
     The command extracts all available data even when start and end dates are specified.
     """
 
@@ -160,45 +160,47 @@ def get_macro_params():
     ).loc[baseline_yearquarter]
 
     # find zeta_D (Share of new debt issues from government that are purchased by foreigners)
-    macro_parameters["zeta_D"] = pd.Series(
+    macro_parameters["zeta_D"] = [pd.Series(
         wb_data_q["Gross PSD USD - external creditors"]
         / (
             wb_data_q["Gross PSD USD - domestic creditors"]
             + wb_data_q["Gross PSD USD - external creditors"]
         )
-    ).loc[baseline_yearquarter]
+    ).loc[baseline_yearquarter]]
 
     # find alpha_T
-    macro_parameters["alpha_T"] = pd.Series(
+    macro_parameters["alpha_T"] = [pd.Series(
         (
             fred_data_q["Total gov transfer payments"]
             - fred_data_q["Social Security payments"]
         )
         / fred_data_q["Nominal GDP"]
-    ).loc[baseline_date]
+    ).loc[baseline_date]]
 
     # find alpha_G
-    macro_parameters["alpha_G"] = pd.Series(
-        (
-            fred_data_q["Gov expenditures"]
-            - fred_data_q["Total gov transfer payments"]
-            - fred_data_q["Gov interest payments"]
-        )
-        / fred_data_q["Nominal GDP"]
-    ).loc[baseline_date]
+    macro_parameters["alpha_G"] = [
+        min(0.03, pd.Series(
+            (
+                fred_data_q["Gov expenditures"]
+                - fred_data_q["Total gov transfer payments"]
+                - fred_data_q["Gov interest payments"]
+            )
+            / fred_data_q["Nominal GDP"]
+        ).loc[baseline_date])
+    ]
 
     # find gamma
-    macro_parameters["gamma"] = 1 - (
+    macro_parameters["gamma"] = [1 - (
         (
             un_data_a.loc[
                 un_data_a["TIME_PERIOD"] == baseline_date.year, "OBS_VALUE"
             ].squeeze()
         )
         / 100
-    )
+    )]
 
     # find g_y
-    macro_parameters["g_y"] = (
+    macro_parameters["g_y_annual"] = (
         wb_data_a["GDP per capita (constant 2015 US$)"].pct_change(-1).mean()
     )
 
